@@ -1,0 +1,91 @@
+.header {
+	border-bottom: 1px solid #d8d9d0;
+	background: #f7f7f2;
+}
+
+.inner {
+	width: min(1180px, calc(100% - 48px));
+	min-height: 76px;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 40px;
+}
+
+.brand {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	color: #202721;
+	font-size: 19px;
+	font-weight: 700;
+	text-decoration: none;
+	letter-spacing: -0.6px;
+}
+
+.brandMark {
+	display: grid;
+	place-items: center;
+	width: 37px;
+	height: 37px;
+	background: #355b46;
+	color: #fff;
+	font-size: 12px;
+	letter-spacing: -0.5px;
+}
+
+.nav {
+	display: flex;
+	align-items: center;
+	gap: 28px;
+	margin-left: auto;
+}
+
+.nav a {
+	color: #535c54;
+	font-size: 14px;
+	text-decoration: none;
+}
+
+.nav a:hover {
+	color: #214b35;
+}
+
+.signIn {
+	padding: 10px 17px;
+	border: 1px solid #355b46;
+	color: #355b46;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.signIn:hover {
+	background: #355b46;
+	color: #fff;
+}
+
+@media (max-width: 760px) {
+	.inner {
+		width: calc(100% - 32px);
+		padding: 17px 0;
+		flex-wrap: wrap;
+		gap: 18px;
+	}
+
+	.nav {
+		order: 3;
+		width: 100%;
+		margin-left: 0;
+		gap: 20px;
+		overflow-x: auto;
+	}
+
+	.nav a {
+		white-space: nowrap;
+	}
+
+	.signIn {
+		margin-left: auto;
+	}
+}
