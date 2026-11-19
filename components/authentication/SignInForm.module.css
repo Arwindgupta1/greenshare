@@ -1,5 +1,4 @@
-/* main basic sign-in layout */
-
+/* Main sign iin layout */
 .signInArea {
 	width: min(1080px, calc(100% - 48px));
 	min-height: 620px;
@@ -13,7 +12,6 @@
 }
 
 /* Welcome message */
-
 .intro {
 	padding-top: 55px;
 }
@@ -62,7 +60,7 @@
 	line-height: 1.7;
 }
 
-/* Sign in form */
+/* Signin form */
 .formArea {
 	padding: 38px;
 	background: var(--surface);
@@ -94,8 +92,7 @@
 	font-size: 14px;
 }
 
-/* emil and password fields */
-
+/* I changed the first field to username to match the assignment brief. */
 .field {
 	margin-bottom: 24px;
 }
@@ -130,8 +127,7 @@
 	border-color: var(--green);
 }
 
-/* Sign in button */
-
+/* Sign-in button */
 .formArea button {
 	width: 100%;
 	min-height: 48px;
@@ -157,8 +153,21 @@
 	background: #1b3829;
 }
 
-/* setup for smaller screens */
+/* kept the button disabled only while Firebase checks the password. */
+.formArea button:disabled {
+	opacity: 0.65;
+	cursor: wait;
+}
 
+/* I removed the success message because members now return to the home page. */
+.error {
+	margin: 18px 0 0;
+	color: #a13930;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+/* Layout for smaller screens */
 @media (max-width: 800px) {
 	.signInArea {
 		width: calc(100% - 32px);
@@ -190,29 +199,4 @@
 	.formArea {
 		padding: 22px 18px;
 	}
-}
-
-/* Shows a clear result after a sign-in attempt. */
-
-.error,
-.success {
-	margin: 18px 0 0;
-	font-size: 13px;
-	line-height: 1.6;
-}
-
-.error {
-	color: #a13930;
-}
-
-.success {
-	color: var(--green);
-	font-weight: 600;
-}
-
-/* only prevent another click while firebase is checking the details. */
-
-.formArea button:disabled {
-	opacity: 0.65;
-	cursor: wait;
 }

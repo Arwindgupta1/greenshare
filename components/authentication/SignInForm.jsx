@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/browser";
 import { getAccountEmail } from "@/lib/authentication/accountName";
 import styles from "./SignInForm.module.css";
@@ -11,7 +12,8 @@ export default function SignInForm() {
 	const [password, setPassword] = useState("");
 	const [busy, setBusy] = useState(false);
 	const [message, setMessage] = useState("");
-	const [signedIn, setSignedIn] = useState(false);
+
+	const router = useRouter();
 
 	async function handleSignIn(event) {
 		event.preventDefault();
@@ -19,6 +21,7 @@ export default function SignInForm() {
 		setMessage("");
 		setBusy(true);
 
+		// I kept username-based sign-in to match the assignment brief.
 		const email = getAccountEmail(username);
 
 		if (!email) {
@@ -28,14 +31,37 @@ export default function SignInForm() {
 		}
 
 		try {
-			// Firebase checks the password using the account's internal email.
-			await signInWithEmailAndPassword(auth, email, password);
+			const result = await signInWithEmailAndPassword(auth, email, password);
 
-			setSignedIn(true);
+			// I added this step so the server knows who has signed in.
+			const idToken = await result.user.getIdToken();
+
+			const response = await fetch("/api/session", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				credentials: "same-origin",
+				body: JSON.stringify({ idToken }),
+			});
+
+			if (!response.ok) {
+				throw new Error("Could not start the server session.");
+			}
+
+			// Both sessions are now ready, so the member can return home.
 			setPassword("");
-			setMessage("You have signed in successfully.");
-		} catch {
-			// Do not reveal whether the username or password was wrong.
+			router.push("/");
+			router.refresh();
+		} catch (error) {
+			// If either step fails, I clear the browser session too.
+			try {
+				await signOut(auth);
+			} catch (signOutError) {
+				console.error("Could not clear browser session.", signOutError);
+			}
+
+			console.error("Sign-in failed.", error);
 			setMessage("Could not sign in. Check your details and try again.");
 		} finally {
 			setBusy(false);
@@ -67,58 +93,52 @@ export default function SignInForm() {
 					<p>Enter your account details below.</p>
 				</div>
 
-				{signedIn ? (
-					<p className={styles.success} role="status">
-						{message}
-					</p>
-				) : (
-					<form onSubmit={handleSignIn}>
-						<div className={styles.field}>
-							<label htmlFor="username">Username</label>
+				<form onSubmit={handleSignIn}>
+					<div className={styles.field}>
+						<label htmlFor="username">Username</label>
 
-							<input
-								id="username"
-								type="text"
-								name="username"
-								autoComplete="username"
-								placeholder="Enter your username"
-								value={username}
-								onChange={function (event) {
-									setUsername(event.target.value);
-								}}
-								maxLength={24}
-								required
-							/>
-						</div>
+						<input
+							id="username"
+							type="text"
+							name="username"
+							autoComplete="username"
+							placeholder="Enter your username"
+							value={username}
+							onChange={function (event) {
+								setUsername(event.target.value);
+							}}
+							maxLength={24}
+							required
+						/>
+					</div>
 
-						<div className={styles.field}>
-							<label htmlFor="password">Password</label>
+					<div className={styles.field}>
+						<label htmlFor="password">Password</label>
 
-							<input
-								id="password"
-								type="password"
-								name="password"
-								autoComplete="current-password"
-								placeholder="Your password"
-								value={password}
-								onChange={function (event) {
-									setPassword(event.target.value);
-								}}
-								required
-							/>
-						</div>
+						<input
+							id="password"
+							type="password"
+							name="password"
+							autoComplete="current-password"
+							placeholder="Your password"
+							value={password}
+							onChange={function (event) {
+								setPassword(event.target.value);
+							}}
+							required
+						/>
+					</div>
 
-						<button type="submit" disabled={busy}>
-							{busy ? "Signing in..." : "Sign in"}
-						</button>
+					<button type="submit" disabled={busy}>
+						{busy ? "Signing in..." : "Sign in"}
+					</button>
 
-						{message && (
-							<p className={styles.error} role="alert">
-								{message}
-							</p>
-						)}
-					</form>
-				)}
+					{message && (
+						<p className={styles.error} role="alert">
+							{message}
+						</p>
+					)}
+				</form>
 			</div>
 		</section>
 	);
