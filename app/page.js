@@ -1,7 +1,13 @@
 import Link from "next/link";
 import styles from "./page.module.css";
+import { getLibraryRecords } from "@/lib/libraries/libraryRecords";
 
-export default function Home() {
+// library details should be read again when the page is opened
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+	// Read the library list on the server before showing the page.
+	const libraries = await getLibraryRecords();
 	return (
 		<main>
 			<section className={styles.intro}>
@@ -44,6 +50,37 @@ export default function Home() {
 						</div>
 					</aside>
 				</div>
+			</section>
+
+			<section className={styles.librarySection}>
+				<div className={styles.libraryHeading}>
+					<div>
+						<p className={styles.eyebrow}>OUR LOCATIONS</p>
+						<h2>Library locations</h2>
+					</div>
+
+					<span>{libraries.length} listed</span>
+				</div>
+
+				{libraries.length === 0 ? (
+					<p className={styles.emptyLibrary}>
+						No library locations have been added yet.
+					</p>
+				) : (
+					<div className={styles.libraryList}>
+						{libraries.map(function (library) {
+							return (
+								<div className={styles.libraryItem} key={library.id}>
+									<span className={styles.libraryName}>{library.name}</span>
+
+									<span className={styles.libraryPlace}>
+										{library.city || "Location not specified"}
+									</span>
+								</div>
+							);
+						})}
+					</div>
+				)}
 			</section>
 
 			<section className={styles.bottom}>
