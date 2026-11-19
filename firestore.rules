@@ -1,0 +1,44 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Check the user's role before showing admin-only data.
+    function isLibraryAdmin() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // Users can see their own profile. Admins can see all profiles.
+    match /users/{userId} {
+      allow read: if request.auth != null
+        && (request.auth.uid == userId || isLibraryAdmin());
+
+      allow write: if false;
+    }
+
+    // Library locations and equipment can be viewed by anyone.
+    match /libraries/{libraryId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /equipment/{equipmentId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Workers only see their own bookings.
+    // Library admins can see bookings made by any worker.
+    match /reservations/{reservationId} {
+      allow read: if request.auth != null
+        && (
+          resource.data.workerId == request.auth.uid
+          || isLibraryAdmin()
+        );
+
+      allow write: if false;
+    }
+  }
+}
