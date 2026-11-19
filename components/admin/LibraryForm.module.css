@@ -1,0 +1,121 @@
+/* form follows the same simple style as the rest of GreenShare. */
+.formSection {
+	max-width: 650px;
+	padding: 35px;
+	border: 1px solid var(--line);
+	border-top: 4px solid var(--green);
+	background: var(--surface);
+}
+
+.heading {
+	margin-bottom: 30px;
+}
+
+.heading span {
+	color: var(--green);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 1.5px;
+}
+
+.heading h2 {
+	margin: 12px 0 10px;
+	font-size: 28px;
+	font-weight: 600;
+	letter-spacing: -1px;
+}
+
+.heading p {
+	margin: 0;
+	color: var(--muted);
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+/* I grouped related fields to keep form shorter and easier to read. */
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 22px;
+}
+
+.twoColumns {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 18px;
+}
+
+.field label {
+	display: block;
+	margin-bottom: 9px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.field input {
+	width: 100%;
+	min-height: 46px;
+	padding: 0 13px;
+	border: 1px solid var(--line);
+	border-radius: 3px;
+	background: white;
+	color: var(--ink);
+	font-size: 14px;
+}
+
+.field input::placeholder {
+	color: #929990;
+}
+
+.field input:focus {
+	border-color: var(--green);
+}
+
+/* buton is only disabled while the location is being saved. */
+.form button {
+	min-height: 48px;
+	padding: 12px 20px;
+	border: 1px solid var(--green);
+	background: var(--green);
+	color: white;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.form button:hover:not(:disabled) {
+	background: #244533;
+}
+
+.form button:disabled {
+	opacity: 0.65;
+	cursor: wait;
+}
+
+/* I added short messages so the admin knows whether the save worked. */
+.success,
+.error {
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.success {
+	color: var(--green);
+}
+
+.error {
+	color: #a13930;
+}
+
+/* Keep paired fields readable on smaller screens. */
+@media (max-width: 600px) {
+	.formSection {
+		padding: 24px 18px;
+	}
+
+	.twoColumns {
+		grid-template-columns: 1fr;
+		gap: 22px;
+	}
+}

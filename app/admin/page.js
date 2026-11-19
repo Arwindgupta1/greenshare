@@ -3,10 +3,19 @@ import {
 	getSignedInAccount,
 	requireLibraryAdmin,
 } from "@/lib/authentication/serverAccount";
+import { getLibraryRecords } from "@/lib/libraries/libraryRecords";
+import LibraryForm from "@/components/admin/LibraryForm";
+import LibraryList from "@/components/admin/LibraryList";
 
-// I check access on the server because hiding the admin link
-// in the header would not stop someone opening /admin directly.
+export const dynamic = "force-dynamic";
+
+export const metadata = {
+	title: "Library desk | GreenShare",
+};
+
 export default async function AdminPage() {
+	// I kept the access checks on the server because hiding
+	// the admin link alone would not protect this page.
 	const account = await getSignedInAccount();
 
 	if (!account) {
@@ -17,24 +26,33 @@ export default async function AdminPage() {
 		redirect("/");
 	}
 
-	// I added a second check here so future admin features
-	// will follow the same permission rule.
 	await requireLibraryAdmin();
+
+	// I now load the saved locations here and pass them to the list.
+	// This keeps the Firestore code out of the display component.
+	const libraries = await getLibraryRecords();
 
 	return (
 		<main
-			style={{ maxWidth: "1180px", margin: "0 auto", padding: "70px 24px" }}
+			style={{
+				maxWidth: "1180px",
+				margin: "0 auto",
+				padding: "70px 24px",
+			}}
 		>
 			<p style={{ color: "#355b46", fontSize: "12px" }}>LIBRARY MANAGEMENT</p>
 
 			<h1>Library desk</h1>
 
 			<p>
-				Welcome, {account.username}. You can manage library locations, equipment
-				and borrowing reservations here.
+				Welcome, {account.username}. Manage library locations and equipment from
+				here.
 			</p>
 
-			<p>The management tools will be added in the next stage.</p>
+			{/* I added the list below the form so new locations can
+          be checked without opening Firebase Console. */}
+			<LibraryForm />
+			<LibraryList libraries={libraries} />
 		</main>
 	);
 }
