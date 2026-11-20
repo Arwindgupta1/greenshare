@@ -1,0 +1,38 @@
+/* Did delete button simple so it matches overall style. */
+.deleteArea {
+	margin-top: 15px;
+}
+
+.deleteButton {
+	padding: 7px 0;
+	border: 0;
+	background: transparent;
+	color: #a13930;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+
+.deleteButton:hover:not(:disabled) {
+	color: #76251f;
+}
+
+.deleteButton:focus-visible {
+	outline: 2px solid #a13930;
+	outline-offset: 3px;
+}
+
+.deleteButton:disabled {
+	opacity: 0.65;
+	cursor: wait;
+}
+
+.error {
+	max-width: 500px;
+	margin: 8px 0 0;
+	color: #a13930;
+	font-size: 13px;
+	line-height: 1.6;
+}

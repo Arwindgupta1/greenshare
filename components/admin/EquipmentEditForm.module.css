@@ -1,0 +1,130 @@
+/* Also here I kept the equipment editor visually consistent with the existing admin forms. */
+.editArea {
+	width: 100%;
+	margin-top: 15px;
+}
+
+.editButton {
+	padding: 7px 0;
+	border: 0;
+	background: transparent;
+	color: var(--green);
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+
+.editButton:focus-visible,
+.saveButton:focus-visible,
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+	outline: 2px solid var(--green);
+	outline-offset: 3px;
+}
+
+/* I placed the editor below the equipment details to avoid opening a separate management page. */
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	max-width: 650px;
+	margin-top: 18px;
+	padding: 26px;
+	border: 1px solid var(--line);
+	background: var(--surface);
+}
+
+.heading h4 {
+	margin: 0 0 7px;
+	font-size: 19px;
+	font-weight: 600;
+}
+
+.heading p {
+	margin: 0;
+	color: var(--muted);
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.columns {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 18px;
+}
+
+.field label {
+	display: block;
+	margin-bottom: 8px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.field input,
+.field select,
+.field textarea {
+	width: 100%;
+	min-height: 44px;
+	padding: 10px 12px;
+	border: 1px solid var(--line);
+	border-radius: 3px;
+	background: white;
+	color: var(--ink);
+	font: inherit;
+	font-size: 14px;
+}
+
+.field textarea {
+	min-height: 105px;
+	resize: vertical;
+	line-height: 1.6;
+}
+
+.saveButton {
+	align-self: flex-start;
+	min-height: 44px;
+	padding: 12px 22px;
+	border: 1px solid var(--green);
+	background: var(--green);
+	color: white;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.saveButton:hover:not(:disabled) {
+	background: #244533;
+}
+
+.saveButton:disabled {
+	opacity: 0.65;
+	cursor: wait;
+}
+
+.success,
+.error {
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.success {
+	color: var(--green);
+}
+
+.error {
+	color: #a13930;
+}
+
+@media (max-width: 600px) {
+	.form {
+		padding: 20px 16px;
+	}
+
+	.columns {
+		grid-template-columns: 1fr;
+	}
+}

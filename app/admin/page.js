@@ -6,6 +6,7 @@ import {
 import { getLibraryRecords } from "@/lib/libraries/libraryRecords";
 import LibraryForm from "@/components/admin/LibraryForm";
 import LibraryList from "@/components/admin/LibraryList";
+import EquipmentForm from "@/components/admin/EquipmentForm";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +15,8 @@ export const metadata = {
 };
 
 export default async function AdminPage() {
-	// I kept the access checks on the server because hiding
-	// the admin link alone would not protect this page.
+	// I keep the permission checks on the server so only
+	// library admins can access the management tools.
 	const account = await getSignedInAccount();
 
 	if (!account) {
@@ -28,8 +29,6 @@ export default async function AdminPage() {
 
 	await requireLibraryAdmin();
 
-	// I now load the saved locations here and pass them to the list.
-	// This keeps the Firestore code out of the display component.
 	const libraries = await getLibraryRecords();
 
 	return (
@@ -49,10 +48,12 @@ export default async function AdminPage() {
 				here.
 			</p>
 
-			{/* I added the list below the form so new locations can
-          be checked without opening Firebase Console. */}
 			<LibraryForm />
+
 			<LibraryList libraries={libraries} />
+
+			{/* Added equipment registration after library managemen because each item must belong to an existing location. */}
+			<EquipmentForm libraries={libraries} />
 		</main>
 	);
 }

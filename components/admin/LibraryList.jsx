@@ -1,3 +1,4 @@
+import Link from "next/link";
 import LibraryEditForm from "./LibraryEditForm";
 import LibraryDeleteButton from "./LibraryDeleteButton";
 import styles from "./LibraryList.module.css";
@@ -51,7 +52,15 @@ export default function LibraryList({ libraries }) {
 									</div>
 								</div>
 
-								{/* I placed both actions together so each library can be managed from its own row. */}
+								{/* I added a direct link to each library's equipment so the admin can view its inventory separately. */}
+								<Link
+									href={`/libraries/${library.id}`}
+									className={styles.viewLink}
+								>
+									View equipment
+								</Link>
+
+								{/* I kept the existing management actions so the admin can still edit or delete a location. */}
 								<div className={styles.actions}>
 									<LibraryEditForm library={library} />
 									<LibraryDeleteButton library={library} />
