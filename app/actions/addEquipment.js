@@ -1,22 +1,16 @@
 "use server";
 
-/*
-  I created this Server Action to allow library administrators to add
-  new equipment to an existing library. I used a Server Action because
-  the data needs to be validated and saved securely in Firestore,
-  without allowing the browser to access administrative operations.
-  The function checks the admin's permissions, validates the equipment
-  details and makes sure the selected library exists before saving.
-  I also keep the total stock quantity separate from reservations,
-  so availability can be calculated for each borrowing date later.
-  After saving, I revalidate the relevant pages so the new equipment
-  can be displayed without relying on outdated data.
- */
-
 import { revalidatePath } from "next/cache";
 import { getServerDb } from "@/lib/firebase/server";
 import { requireLibraryAdmin } from "@/lib/authentication/serverAccount";
 
+/*
+ * I updated this Server Action to check the selected library
+ * and save new equipment in a Firestore transaction.
+ *
+ * This helps prevent equipment from being assigned to a
+ * library that is being deleted at the same time.
+ */
 export async function addEquipment(previousState, formData) {
 	await requireLibraryAdmin();
 
@@ -70,37 +64,46 @@ export async function addEquipment(previousState, formData) {
 	try {
 		const db = getServerDb();
 		const libraryRef = db.collection("libraries").doc(libraryId);
+		const equipmentRef = db.collection("equipment").doc();
 
-		// I check the selected library before linking equipment to it.
-		const library = await libraryRef.get();
+		await db.runTransaction(async function (transaction) {
+			// I check the selected library inside the transaction
+			// before assigning equipment to it.
+			const library = await transaction.get(libraryRef);
 
-		if (!library.exists) {
-			return {
-				success: false,
-				message: "The selected library no longer exists.",
-			};
-		}
+			if (!library.exists) {
+				throw new Error("LIBRARY_NOT_FOUND");
+			}
 
-		// I keep the total stock separate from daily reservations.
-		// This will let us calculate availability for each borrowing date.
-		await db.collection("equipment").add({
-			name,
-			category,
-			libraryId,
-			description,
-			totalQuantity,
-			active: true,
+			// I keep the total stock separate from daily reservations.
+			// This will let us calculate availability for each borrowing date.
+			transaction.create(equipmentRef, {
+				name,
+				category,
+				libraryId,
+				description,
+				totalQuantity,
+				active: true,
+			});
 		});
 
 		revalidatePath("/admin");
 		revalidatePath("/");
 		revalidatePath("/equipment");
+		revalidatePath(`/libraries/${libraryId}`);
 
 		return {
 			success: true,
 			message: "Equipment added successfully.",
 		};
 	} catch (error) {
+		if (error.message === "LIBRARY_NOT_FOUND") {
+			return {
+				success: false,
+				message: "The selected library no longer exists.",
+			};
+		}
+
 		console.error("Could not add equipment.", error);
 
 		return {

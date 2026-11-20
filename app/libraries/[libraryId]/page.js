@@ -7,6 +7,8 @@ import { getLibraryEquipment } from "@/lib/equipment/equipmentRecords";
 import EquipmentEditForm from "@/components/admin/EquipmentEditForm";
 import styles from "./page.module.css";
 import EquipmentDeleteButton from "@/components/admin/EquipmentDeleteButton";
+import BorrowForm from "@/components/borrowing/BorrowForm";
+import { getEquipmentAvailability } from "@/lib/borrowing/dailyAvailability";
 
 export const dynamic = "force-dynamic";
 
@@ -33,9 +35,35 @@ export default async function LibraryPage({ params }) {
 	// checking signed-in account on the server befor showing any equipment management controls.
 	const account = await getSignedInAccount();
 	const isAdmin = account?.role === "admin";
+	const isWorker = account?.role === "worker";
 
 	// Only admins need the full list of libraries for editing
 	const libraries = isAdmin ? await getLibraryRecords() : [];
+
+	const borrowingDates = ["2027-02-01", "2027-02-02", "2027-02-03"];
+
+	// I load equipment availability for Workers so they can check the stock before making a reservation.
+	const equipmentAvailability = isWorker
+		? await Promise.all(
+				equipment.map(async function (item) {
+					const records = await Promise.all(
+						borrowingDates.map(function (date) {
+							return getEquipmentAvailability(item.id, date);
+						}),
+					);
+
+					const availableByDate = {};
+
+					records.forEach(function (record) {
+						if (record) {
+							availableByDate[record.date] = record.availableQuantity;
+						}
+					});
+
+					return availableByDate;
+				}),
+			)
+		: [];
 
 	const address = [library.address, library.city, library.postcode]
 		.filter(Boolean)
@@ -73,7 +101,7 @@ export default async function LibraryPage({ params }) {
 					</p>
 				) : (
 					<div className={styles.list}>
-						{equipment.map(function (item) {
+						{equipment.map(function (item, index) {
 							return (
 								<article className={styles.item} key={item.id}>
 									<div className={styles.itemDetails}>
@@ -83,7 +111,7 @@ export default async function LibraryPage({ params }) {
 
 										{item.description && <p>{item.description}</p>}
 
-										{/* Now I keep here  equipment management controls available only to admins and both actions also check permissions on the server. */}
+										{/* Now I keep here equipment management controls available only to admins and both actions also check permissions on the server. */}
 										{isAdmin && (
 											<div className={styles.equipmentActions}>
 												<EquipmentEditForm
@@ -94,6 +122,14 @@ export default async function LibraryPage({ params }) {
 
 												<EquipmentDeleteButton equipment={item} />
 											</div>
+										)}
+
+										{/* dded borrowing form for Workers so they can reserve equipment for a selected date. */}
+										{isWorker && (
+											<BorrowForm
+												equipment={item}
+												availability={equipmentAvailability[index]}
+											/>
 										)}
 									</div>
 

@@ -1,8 +1,8 @@
-/*
+/**
  * I created this Server Action so library admins can update equipment details without creating a new Firestore document.
- I check the admin's permissions and validate the submitted values on the server. I also check that the equipment and
- selected library still exist before saving any changes. I keep the total stock separate from daily availability
- because reservations will be managed by date later.
+ * I check the admin's permissions and validate the submitted values on the server. I also check that the equipment and
+ * selected library still exist before saving any changes. I keep the total stock separate from daily availability
+ * because reservations will be managed by date later.
  */
 
 "use server";
@@ -69,58 +69,84 @@ export async function updateEquipment(previousState, formData) {
 		};
 	}
 
+	const dates = ["2027-02-01", "2027-02-02", "2027-02-03"];
+
 	try {
 		const db = getServerDb();
 
 		const equipmentRef = db.collection("equipment").doc(equipmentId);
 		const libraryRef = db.collection("libraries").doc(libraryId);
 
-		const equipment = await equipmentRef.get();
-		const library = await libraryRef.get();
+		const availabilityRefs = dates.map(function (date) {
+			return db
+				.collection("equipmentAvailability")
+				.doc(`${equipmentId}_${date}`);
+		});
 
-		if (!equipment.exists) {
-			return {
-				success: false,
-				message: "Equipment not found.",
-			};
-		}
-
-		if (!library.exists) {
-			return {
-				success: false,
-				message: "The selected library does not exist.",
-			};
-		}
-
-		// I block stock or location changes when reservations already exist until the booking rules are implemented.
-		const reservations = await db
+		const reservationQuery = db
 			.collection("reservations")
 			.where("equipmentId", "==", equipmentId)
-			.limit(1)
-			.get();
+			.limit(1);
 
-		const savedEquipment = equipment.data();
+		const savedEquipment = await db.runTransaction(
+			async function (transaction) {
+				const equipment = await transaction.get(equipmentRef);
+				const library = await transaction.get(libraryRef);
 
-		if (
-			!reservations.empty &&
-			(libraryId !== savedEquipment.libraryId ||
-				totalQuantity !== savedEquipment.totalQuantity)
-		) {
-			return {
-				success: false,
-				message:
-					"Stock and location cannot be changed while this equipment has reservations.",
-			};
-		}
+				if (!equipment.exists) {
+					throw new Error("EQUIPMENT_NOT_FOUND");
+				}
 
-		// it was required to update the existing document to keep its ID and preserve its connection to the library.
-		await equipmentRef.update({
-			name,
-			category,
-			libraryId,
-			description,
-			totalQuantity,
-		});
+				if (!library.exists) {
+					throw new Error("LIBRARY_NOT_FOUND");
+				}
+
+				const currentEquipment = equipment.data();
+
+				// I check the reserved quantity for each borrowing date before updating the stock.
+				for (const reference of availabilityRefs) {
+					const availability = await transaction.get(reference);
+
+					if (!availability.exists) {
+						continue;
+					}
+
+					const reservedQuantity = availability.data().reservedQuantity;
+
+					if (
+						!Number.isSafeInteger(reservedQuantity) ||
+						reservedQuantity < 0 ||
+						reservedQuantity > currentEquipment.totalQuantity
+					) {
+						throw new Error("INVALID_AVAILABILITY");
+					}
+
+					if (totalQuantity < reservedQuantity) {
+						throw new Error("STOCK_BELOW_BOOKINGS");
+					}
+				}
+
+				// I block location changes when reservations already exist to preserve the booking history.
+				if (libraryId !== currentEquipment.libraryId) {
+					const reservations = await transaction.get(reservationQuery);
+
+					if (!reservations.empty) {
+						throw new Error("LOCATION_HAS_BOOKINGS");
+					}
+				}
+
+				// it was required to update the existing document to keep its ID and preserve its connection to the library.
+				transaction.update(equipmentRef, {
+					name,
+					category,
+					libraryId,
+					description,
+					totalQuantity,
+				});
+
+				return currentEquipment;
+			},
+		);
 
 		revalidatePath("/admin");
 		revalidatePath("/equipment");
@@ -132,6 +158,42 @@ export async function updateEquipment(previousState, formData) {
 			message: "Equipment updated successfully.",
 		};
 	} catch (error) {
+		if (error.message === "EQUIPMENT_NOT_FOUND") {
+			return {
+				success: false,
+				message: "Equipment not found.",
+			};
+		}
+
+		if (error.message === "LIBRARY_NOT_FOUND") {
+			return {
+				success: false,
+				message: "The selected library does not exist.",
+			};
+		}
+
+		if (error.message === "STOCK_BELOW_BOOKINGS") {
+			return {
+				success: false,
+				message: "Stock cannot be lower than the quantity already reserved.",
+			};
+		}
+
+		if (error.message === "LOCATION_HAS_BOOKINGS") {
+			return {
+				success: false,
+				message:
+					"Equipment with reservations cannot be moved to another library.",
+			};
+		}
+
+		if (error.message === "INVALID_AVAILABILITY") {
+			return {
+				success: false,
+				message: "Equipment availability data is invalid.",
+			};
+		}
+
 		console.error("Could not update equipment.", error);
 
 		return {

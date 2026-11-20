@@ -60,7 +60,7 @@ export default function SiteHeader() {
 
 					{/* I kept borrowing separate because only workers need this link. */}
 					{account?.role === "worker" && (
-						<Link href="/borrowing">My borrowing</Link>
+						<Link href="/my-borrowing">My borrowing</Link>
 					)}
 
 					{/* Library admins have their own area for managing equipment. */}

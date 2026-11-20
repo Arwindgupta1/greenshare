@@ -1,0 +1,46 @@
+.wrapper {
+	margin-top: 32px;
+}
+
+.deleteButton {
+	min-height: 44px;
+	padding: 12px 20px;
+	border: 1px solid #a13930;
+	border-radius: 3px;
+	background: transparent;
+	color: #a13930;
+	font: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.deleteButton:hover:not(:disabled) {
+	background: #a13930;
+	color: white;
+}
+
+.deleteButton:focus-visible {
+	outline: 2px solid #a13930;
+	outline-offset: 3px;
+}
+
+.deleteButton:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.error,
+.success {
+	margin-top: 14px;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.error {
+	color: #a13930;
+}
+
+.success {
+	color: var(--green);
+}
