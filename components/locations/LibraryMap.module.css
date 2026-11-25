@@ -1,0 +1,28 @@
+.section {
+	margin: 40px 0;
+}
+
+.section h2 {
+	margin-bottom: 10px;
+	font-size: 26px;
+}
+
+.section p {
+	margin-bottom: 20px;
+	color: var(--muted);
+	font-size: 14px;
+}
+
+.map {
+	width: 100%;
+	height: 430px;
+	border: 1px solid var(--line);
+	border-radius: 4px;
+	z-index: 0;
+}
+
+@media (max-width: 600px) {
+	.map {
+		height: 330px;
+	}
+}
