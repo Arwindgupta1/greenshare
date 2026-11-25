@@ -1,6 +1,7 @@
 import SiteHeader from "@/components/shell/SiteHeader";
 import { SessionProvider } from "@/context/SessionProvider"; // Now we share sessio with whole app
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 
 export const metadata = {
 	title: "GreenShare | Community Tool Library",
