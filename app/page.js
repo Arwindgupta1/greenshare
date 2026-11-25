@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
 	// Read the library list on the server before showing the page.
 	const libraries = await getLibraryRecords();
+
 	return (
 		<main>
 			<section className={styles.intro}>
