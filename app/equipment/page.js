@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getEquipmentCatalogue } from "@/lib/equipment/equipmentSearch";
 import { getLibraryRecords } from "@/lib/libraries/libraryRecords";
+import { getEquipmentAvailability } from "@/lib/borrowing/dailyAvailability";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export default async function EquipmentPage({ searchParams }) {
 	const date = validDate ? selectedDate : "";
 
 	// I want to filter  equipment on the server so the results can be opened directly using the search URL.
-	const results = equipment.filter(function (item) {
+	const filteredEquipment = equipment.filter(function (item) {
 		if (category && item.category !== category) {
 			return false;
 		}
@@ -60,6 +61,28 @@ export default async function EquipmentPage({ searchParams }) {
 
 		return true;
 	});
+
+	// With a date selected, the results should reflect what can actually be borrowed that day.
+	const equipmentWithAvailability = await Promise.all(
+		filteredEquipment.map(async function (item) {
+			if (!date) {
+				return item;
+			}
+
+			const availability = await getEquipmentAvailability(item.id, date);
+
+			return {
+				...item,
+				availableQuantity: availability?.availableQuantity ?? 0,
+			};
+		}),
+	);
+
+	const results = date
+		? equipmentWithAvailability.filter(function (item) {
+				return item.availableQuantity > 0;
+			})
+		: equipmentWithAvailability;
 
 	function getLibraryName(itemLibraryId) {
 		const library = libraries.find(function (item) {
@@ -146,8 +169,9 @@ export default async function EquipmentPage({ searchParams }) {
 				</form>
 
 				<p className={styles.dateNotice}>
-					Borrowing availability for the selected date will be shown when the
-					reservation system is completed.
+					{date
+						? "Only equipment available on the selected date is shown."
+						: "Select a borrowing date to check available quantities."}
 				</p>
 			</section>
 
@@ -167,7 +191,7 @@ export default async function EquipmentPage({ searchParams }) {
 				{results.length === 0 ? (
 					<div className={styles.empty}>
 						<h3>No equipment found</h3>
-						<p>Try another category or library location.</p>
+						<p>Try another category, library location or borrowing date.</p>
 					</div>
 				) : (
 					<div className={styles.list}>
@@ -196,11 +220,13 @@ export default async function EquipmentPage({ searchParams }) {
 									</div>
 
 									<div className={styles.stock}>
-										<span>TOTAL STOCK</span>
+										<span>{date ? "AVAILABLE STOCK" : "TOTAL STOCK"}</span>
 
-										<strong>{item.totalQuantity}</strong>
+										<strong>
+											{date ? item.availableQuantity : item.totalQuantity}
+										</strong>
 
-										<p>units owned</p>
+										<p>{date ? "units available" : "units owned"}</p>
 									</div>
 								</article>
 							);
