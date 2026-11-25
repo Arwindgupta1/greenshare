@@ -36,10 +36,10 @@ export default function ReservationEditForm({ reservationId, date, quantity }) {
 
 			<div className={styles.fields}>
 				<div className={styles.field}>
-					<label htmlFor="edit-date">Borrowing date</label>
+					<label htmlFor={`edit-date-${reservationId}`}>Borrowing date</label>
 
 					<select
-						id="edit-date"
+						id={`edit-date-${reservationId}`}
 						name="date"
 						defaultValue={date}
 						disabled={pending}
@@ -52,10 +52,10 @@ export default function ReservationEditForm({ reservationId, date, quantity }) {
 				</div>
 
 				<div className={styles.field}>
-					<label htmlFor="edit-quantity">Quantity</label>
+					<label htmlFor={`edit-quantity-${reservationId}`}>Quantity</label>
 
 					<input
-						id="edit-quantity"
+						id={`edit-quantity-${reservationId}`}
 						type="number"
 						name="quantity"
 						min="1"

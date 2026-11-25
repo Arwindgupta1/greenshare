@@ -85,6 +85,7 @@ export async function deleteReservation(previousState, formData) {
 		});
 
 		revalidatePath("/my-borrowing");
+		revalidatePath("/admin/reservations");
 		revalidatePath("/equipment");
 	} catch (error) {
 		if (error.message === "RESERVATION_NOT_FOUND") {
@@ -126,6 +127,10 @@ export async function deleteReservation(previousState, formData) {
 		};
 	}
 
-	// The deleted reservation has no details page, so leave it on the server.
+	// Send the user back to the reservation list for their role.
+	if (account.role === "admin") {
+		redirect("/admin/reservations");
+	}
+
 	redirect("/my-borrowing");
 }

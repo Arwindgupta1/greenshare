@@ -7,6 +7,7 @@ import { getLibraryRecords } from "@/lib/libraries/libraryRecords";
 import LibraryForm from "@/components/admin/LibraryForm";
 import LibraryList from "@/components/admin/LibraryList";
 import EquipmentForm from "@/components/admin/EquipmentForm";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -43,10 +44,24 @@ export default async function AdminPage() {
 
 			<h1>Library desk</h1>
 
-			<p>
-				Welcome, {account.username}. Manage library locations and equipment from
-				here.
-			</p>
+			{/* Access to reservations from every library location. */}
+			<div style={{ margin: "28px 0" }}>
+				<Link
+					href="/admin/reservations"
+					style={{
+						display: "inline-block",
+						padding: "12px 20px",
+						backgroundColor: "#355b46",
+						color: "#ffffff",
+						textDecoration: "none",
+						borderRadius: "4px",
+						fontSize: "14px",
+						fontWeight: "600",
+					}}
+				>
+					View all reservations
+				</Link>
+			</div>
 
 			<LibraryForm />
 
