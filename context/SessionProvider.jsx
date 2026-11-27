@@ -50,7 +50,8 @@ export function SessionProvider({ children }) {
 			}
 		});
 
-		// and now removing listener when it is no longer needed.
+		// I remove the listener when the component is no longer used,
+		// so it doesn't keep listening for login changes.
 		return function () {
 			stopListening();
 		};

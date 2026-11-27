@@ -1,5 +1,5 @@
 import SiteHeader from "@/components/shell/SiteHeader";
-import { SessionProvider } from "@/context/SessionProvider"; // Now we share sessio with whole app
+import { SessionProvider } from "@/context/SessionProvider";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 
@@ -22,5 +22,3 @@ export default function RootLayout({ children }) {
 		</html>
 	);
 }
-
-// Layout stays server component but SessionProvider is client component but only covers part of the app.

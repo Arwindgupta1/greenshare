@@ -23,7 +23,8 @@ export default function LibraryForm() {
 				<p>Enter the details of the new equipment library.</p>
 			</div>
 
-			{/* I used a Server Action so the form can save directly to Firestore. */}
+			{/* I used a Server Action here so the form details can be
+                checked and saved on the server. */}
 			<form action={formAction} className={styles.form}>
 				<div className={styles.field}>
 					<label htmlFor="libraryName">Library name</label>
@@ -75,7 +76,8 @@ export default function LibraryForm() {
 					</div>
 				</div>
 
-				{/* I added coordinates because each library needs a map marker later. */}
+				{/* I added the coordinates here because I need them to place
+                    each library in the correct position on the Leaflet map. */}
 				<div className={styles.twoColumns}>
 					<div className={styles.field}>
 						<label htmlFor="libraryLatitude">Latitude</label>

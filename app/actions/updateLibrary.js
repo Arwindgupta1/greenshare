@@ -74,7 +74,7 @@ export async function updateLibrary(previousState, formData) {
 
 		revalidatePath("/admin");
 		revalidatePath("/");
-		revalidatePath("/locations"); // again I added this so the map shows the updated library details.
+		revalidatePath("/locations");
 		revalidatePath("/equipment");
 
 		return { success: true, message: "Library updated successfully." };

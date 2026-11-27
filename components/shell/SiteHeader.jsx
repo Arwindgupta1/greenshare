@@ -67,7 +67,7 @@ export default function SiteHeader() {
 					{account?.role === "admin" && <Link href="/admin">Library desk</Link>}
 				</nav>
 
-				{/* I now show the member's display name rather than their login name. */}
+				{/* I show the user's display name when it is available otherwise I use their username. */}
 				<div className={styles.accountArea}>
 					{!checking &&
 						(account ? (

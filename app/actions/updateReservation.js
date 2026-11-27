@@ -164,7 +164,7 @@ export async function updateReservation(previousState, formData) {
 		revalidatePath("/my-borrowing");
 		revalidatePath(`/my-borrowing/${reservationId}`);
 		revalidatePath("/equipment");
-		revalidatePath("/locations"); // also here I added this so map shows the updated stock.
+		revalidatePath("/locations");
 		revalidatePath("/admin/reservations");
 
 		if (libraryId) {

@@ -61,7 +61,7 @@ export async function deleteEquipment(equipmentId) {
 
 		revalidatePath("/admin");
 		revalidatePath("/equipment");
-		revalidatePath("/locations"); // I added this so the deleted equipment disappears from the map.
+		revalidatePath("/locations");
 
 		if (libraryId) {
 			revalidatePath(`/libraries/${libraryId}`);

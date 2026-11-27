@@ -152,7 +152,7 @@ export async function updateEquipment(previousState, formData) {
 
 		revalidatePath("/admin");
 		revalidatePath("/equipment");
-		revalidatePath("/locations"); // I added this so equipment changes are also updated on the map.
+		revalidatePath("/locations");
 		revalidatePath(`/libraries/${savedEquipment.libraryId}`);
 		revalidatePath(`/libraries/${libraryId}`);
 

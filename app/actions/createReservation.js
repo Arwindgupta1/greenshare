@@ -128,7 +128,7 @@ export async function createReservation(previousState, formData) {
 		});
 
 		revalidatePath("/equipment");
-		revalidatePath("/locations"); // I added this so the map shows the latest available stock.
+		revalidatePath("/locations"); // I added again this so the map shows the latest available stock.
 
 		if (libraryId) {
 			revalidatePath(`/libraries/${libraryId}`);
