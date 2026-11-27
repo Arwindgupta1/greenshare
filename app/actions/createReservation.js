@@ -6,9 +6,10 @@ import { getServerDb } from "@/lib/firebase/server";
 import { getSignedInAccount } from "@/lib/authentication/serverAccount";
 
 /*
-  I created this Server Action to let Workers book equipment for the allowed dates. I use a Firestore transaction again to
-  check availability and prevent double bookings.
- */
+   I made this Server Action so workers can reserve equipment for one of the three dates given in the assignment.
+   The main thing I wanted to avoid was two people booking more equipment than the library has.
+   I decided to use a Firestore transaction because it lets me check the available stock and save the reservation together.
+*/
 export async function createReservation(previousState, formData) {
 	const account = await getSignedInAccount();
 
@@ -106,7 +107,9 @@ export async function createReservation(previousState, formData) {
 
 			libraryId = equipmentData.libraryId;
 
-			// I update daily reserved quantity and create the booking in the same transaction to prevent overbooking.
+			// Once I know there is enough equipment available I update the
+			// reserved quantity for that day and save the worker's booking.
+			// Both changes are part of the same transaction.
 			transaction.set(availabilityRef, {
 				equipmentId,
 				date,
@@ -125,6 +128,7 @@ export async function createReservation(previousState, formData) {
 		});
 
 		revalidatePath("/equipment");
+		revalidatePath("/locations"); // I added this so the map shows the latest available stock.
 
 		if (libraryId) {
 			revalidatePath(`/libraries/${libraryId}`);

@@ -61,6 +61,8 @@ export async function deleteLibrary(libraryId) {
 
 		revalidatePath("/admin");
 		revalidatePath("/");
+		revalidatePath("/locations"); // I added this so the library list on the map stays updated.
+		revalidatePath("/equipment");
 
 		return {
 			success: true,

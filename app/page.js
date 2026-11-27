@@ -2,7 +2,7 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { getLibraryRecords } from "@/lib/libraries/libraryRecords";
 
-// library details should be read again when the page is opened
+// I keeps this page dynamic so the library list stays up to date.
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
@@ -41,7 +41,7 @@ export default async function Home() {
 					<aside className={styles.info}>
 						<span className={styles.infoLabel}>BORROWING WINDOW</span>
 
-						<strong>01 — 03</strong>
+						<strong>01 - 03</strong>
 						<span className={styles.month}>FEBRUARY 2027</span>
 
 						<div className={styles.infoBottom}>

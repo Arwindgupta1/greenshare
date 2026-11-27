@@ -12,7 +12,8 @@ export default function RootLayout({ children }) {
 	return (
 		<html lang="en-GB">
 			<body>
-				{/* Keeping the same user session available on every page. */}
+				{/* I placed the SessionProvider here because different pages need
+    			to know if someone is logged in and what account they are using. */}
 				<SessionProvider>
 					<SiteHeader />
 					{children}

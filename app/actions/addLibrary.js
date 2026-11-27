@@ -1,17 +1,12 @@
 "use server";
 /*
-I decided to use a Server Action to save new library locations in Firestore.
-Before saving anything, I check that the signed-in user is a library
-admin. I also check the form details on the server rather than relying
-only on the browser.
-Each library has its own Firestore document, with an automatically
-generated ID. I included the address and coordinates because I will
-need them later when adding the Leaflet map.
-I am using useActionState in the form, so this action takes the
-previous state and the submitted form data. This lets me return
-a simple message if something goes wrong without creating a
-separate API endpoint.
-*/
+  I decided to use a Server Action to let admins add new library  locations directly to Firestore.
+  Before saving the details I check if the user is actually an admin and if the information from the
+  form makes sense. Each library gets its own document in Firestore. I also decided to save the address 
+  and coordinates because these are needed to show the library on the Leaflet map.
+  I used useActionState in the form because I wanted to show a simple
+  success or error message without having to create another API route.
+ */
 
 import { revalidatePath } from "next/cache";
 import { getServerDb } from "@/lib/firebase/server";
@@ -50,8 +45,8 @@ export async function addLibrary(previousState, formData) {
 		};
 	}
 
-	// I included coordinates now because the locations will
-	// also appear on the Leaflet map later.
+	// The coordinates are needed for the Leaflet map, so I check
+	// that both values are provided before saving the library.
 	if (!latText || !lngText) {
 		return {
 			success: false,
@@ -87,13 +82,16 @@ export async function addLibrary(previousState, formData) {
 			longitude,
 		});
 
-		// I added this so the home page can show newly added locations.
+		// I refresh these pages so the new library can appear
+		// in the location list and equipment search as well.
 		revalidatePath("/");
 		revalidatePath("/admin");
+		revalidatePath("/locations");
+		revalidatePath("/equipment");
 
 		return {
 			success: true,
-			message: "Library location added :).",
+			message: "Library location added successfully.",
 		};
 	} catch (error) {
 		console.error("Could not add library.", error);

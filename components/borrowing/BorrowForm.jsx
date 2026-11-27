@@ -1,8 +1,8 @@
 "use client";
 /*
-  Workers can use this form to choose a date and reserve equipment.
-  I also included a stock check to prevent bookings when
-  there are not enough items available.
+  I made this form so workers can choose when they want to borrow equipment and how many items they need. 
+  I also wanted them to see how much equipment is available before making a reservation,
+  so they don't try to book more than the library has.
  */
 
 import { useActionState, useEffect, useState } from "react";
@@ -32,7 +32,8 @@ export default function BorrowForm({ equipment, availability }) {
 
 	const availableQuantity = availability[date] ?? 0;
 
-	// refresh - so the page after booking is updated and its available stock
+	// I wanted the available stock to update straight after someone makes a booking,
+	// so I refresh the page when the reservation is successful.
 	useEffect(
 		function () {
 			if (result.success) {

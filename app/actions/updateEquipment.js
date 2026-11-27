@@ -1,8 +1,8 @@
-/**
- * I created this Server Action so library admins can update equipment details without creating a new Firestore document.
- * I check the admin's permissions and validate the submitted values on the server. I also check that the equipment and
- * selected library still exist before saving any changes. I keep the total stock separate from daily availability
- * because reservations will be managed by date later.
+/*
+  I added this action because I wanted the admin to be able to change equipment details without deleting 
+  the item and adding it again. Before saving anything I check if the equipment and selected library
+  still exist in Firestore. I also had to think about what happens when someone changes the total
+  stock but workers have already made reservations. Because of this I check the existing bookings so the admin cannot reduce the stock below the number of items already reserved.
  */
 
 "use server";
@@ -135,7 +135,9 @@ export async function updateEquipment(previousState, formData) {
 					}
 				}
 
-				// it was required to update the existing document to keep its ID and preserve its connection to the library.
+				// I update the same document instead of creating another one
+				// so the equipment keeps its ID and existing reservations still
+				// point to the correct item.
 				transaction.update(equipmentRef, {
 					name,
 					category,
@@ -150,6 +152,7 @@ export async function updateEquipment(previousState, formData) {
 
 		revalidatePath("/admin");
 		revalidatePath("/equipment");
+		revalidatePath("/locations"); // I added this so equipment changes are also updated on the map.
 		revalidatePath(`/libraries/${savedEquipment.libraryId}`);
 		revalidatePath(`/libraries/${libraryId}`);
 

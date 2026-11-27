@@ -12,8 +12,8 @@ const cookieSettings = {
 	path: "/",
 };
 
-// I added this check so another website cannot submit
-// session requests on behalf of a GreenShare user.
+// I wanted to make sure that login requests are coming from
+// GreenShare itself and not from another website trying to send them.
 function isSameOrigin(request) {
 	const origin = request.headers.get("origin");
 
@@ -31,7 +31,8 @@ function isSameOrigin(request) {
 	}
 }
 
-// I now create a server session after Firebase signs someone in.
+// Once Firebase confirms the login, I create a session on the server
+// so the user can stay signed in while moving between pages.
 export async function POST(request) {
 	if (!isSameOrigin(request)) {
 		return NextResponse.json(
@@ -54,7 +55,8 @@ export async function POST(request) {
 		const serverAuth = getServerAuth();
 		const user = await serverAuth.verifyIdToken(idToken, true);
 
-		// I only accept recent sign-ins when starting a new server session.
+		// I decided to allow only recent logins when creating a session this helps avoid using an old login
+		// token to start a new session.
 		const signedInAt = user.auth_time * 1000;
 		const fiveMinutes = 5 * 60 * 1000;
 
@@ -65,7 +67,8 @@ export async function POST(request) {
 			);
 		}
 
-		// Each account needs a valid Firestore profile before it can continue.
+		// Firebase confirms who the user is, but I also need to check
+		// their profile in Firestore to see if they are a worker or admin.
 		const profile = await getServerDb().collection("users").doc(user.uid).get();
 
 		if (!profile.exists || !["worker", "admin"].includes(profile.data().role)) {
@@ -97,7 +100,7 @@ export async function POST(request) {
 	}
 }
 
-// I added this so signing out removes the server session as well.
+// When someone logs out, I also clear their session cookie so they cannot keep using the previous session.
 export async function DELETE(request) {
 	if (!isSameOrigin(request)) {
 		return NextResponse.json(

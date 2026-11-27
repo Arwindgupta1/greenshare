@@ -1,11 +1,9 @@
 "use server";
 
-/**
- * I created this Server Action so administrators can remove equipment that is no longer needed in a library.
- * I check permissions on the server and make sure the equipment exists before deleting it.
- * I also prevent deletion when reservations are linked to the item, because those records
- * will be needed for borrowing history and after deletion I revalidate the library page to display
- * updated equipment list.
+/*
+  I added this action so the admin can remove equipment that is no longer needed in the library. 
+  One thing I had to consider was what happens if someone has already booked that equipment. Because of
+  this I check for existing reservations before allowing it to be deleted so the borrowing records are not affected.
  */
 
 import { revalidatePath } from "next/cache";
@@ -44,7 +42,8 @@ export async function deleteEquipment(equipmentId) {
 				throw new Error("EQUIPMENT_NOT_FOUND");
 			}
 
-			// checking for linked reservations before removing the item.
+			// Before deleting anything, I check if this equipment has any bookings.
+			// If it does, I don't want to remove it from the library.
 			const reservations = await transaction.get(reservationQuery);
 
 			if (!reservations.empty) {
@@ -53,7 +52,8 @@ export async function deleteEquipment(equipmentId) {
 
 			const libraryId = equipment.data().libraryId;
 
-			// I delete only selected equipment document.
+			// At this point I know there are no bookings, so I can delete
+			// this equipment without removing the whole library.
 			transaction.delete(equipmentRef);
 
 			return libraryId;
@@ -61,6 +61,7 @@ export async function deleteEquipment(equipmentId) {
 
 		revalidatePath("/admin");
 		revalidatePath("/equipment");
+		revalidatePath("/locations"); // I added this so the deleted equipment disappears from the map.
 
 		if (libraryId) {
 			revalidatePath(`/libraries/${libraryId}`);

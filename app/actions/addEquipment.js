@@ -5,12 +5,11 @@ import { getServerDb } from "@/lib/firebase/server";
 import { requireLibraryAdmin } from "@/lib/authentication/serverAccount";
 
 /*
- * I updated this Server Action to check the selected library
- * and save new equipment in a Firestore transaction.
- *
- * This helps prevent equipment from being assigned to a
- * library that is being deleted at the same time.
- */
+I made this action so the admin can add new equipment to a selected library.
+One thing I wanted to avoid was adding equipment to a library that might
+have been deleted in the meantime. That's why I check if the library
+still exists before saving the new equipment in Firestore.
+*/
 export async function addEquipment(previousState, formData) {
 	await requireLibraryAdmin();
 
@@ -75,8 +74,9 @@ export async function addEquipment(previousState, formData) {
 				throw new Error("LIBRARY_NOT_FOUND");
 			}
 
-			// I keep the total stock separate from daily reservations.
-			// This will let us calculate availability for each borrowing date.
+			// I only save the total number of items here. The actual available
+			// quantity is worked out separately for each date, depending on
+			// how many units have already been booked.
 			transaction.create(equipmentRef, {
 				name,
 				category,
@@ -90,6 +90,7 @@ export async function addEquipment(previousState, formData) {
 		revalidatePath("/admin");
 		revalidatePath("/");
 		revalidatePath("/equipment");
+		revalidatePath("/locations"); // Added this to keep the library map up to date.
 		revalidatePath(`/libraries/${libraryId}`);
 
 		return {

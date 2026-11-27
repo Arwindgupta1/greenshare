@@ -1,3 +1,11 @@
+/*
+  I added this action so workers can change their own reservations, while the admin can also update bookings when needed.
+  This part was a bit more complicated because changing a booking can affect how much equipment is available. For example, someone
+   might change the date or decide to borrow more items. I used a Firestore transaction to make sure the old stock is
+  adjusted and the new booking details are saved together. I also check that there is enough equipment before allowing
+  the changes.
+ */
+
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -54,7 +62,8 @@ export async function updateReservation(previousState, formData) {
 			}
 
 			const reservation = reservationDocument.data();
-
+			// I wanted workers to be able to change only their own bookings.
+			// The admin can edit any reservation, so I check who owns it first.
 			if (account.role === "worker" && reservation.workerId !== account.uid) {
 				throw new Error("NOT_ALLOWED");
 			}
@@ -130,7 +139,9 @@ export async function updateReservation(previousState, formData) {
 					throw new Error("NOT_ENOUGH_STOCK");
 				}
 
-				// Moving the booking releases the old date and uses the new one.
+				// If someone changes the date, I need to put the equipment back
+				// for the old day and reserve it again for the newly selected date.
+				// Otherwise the available stock would be incorrect.
 				transaction.update(oldAvailabilityRef, {
 					reservedQuantity: oldReserved - oldQuantity,
 				});
@@ -153,6 +164,8 @@ export async function updateReservation(previousState, formData) {
 		revalidatePath("/my-borrowing");
 		revalidatePath(`/my-borrowing/${reservationId}`);
 		revalidatePath("/equipment");
+		revalidatePath("/locations"); // also here I added this so map shows the updated stock.
+		revalidatePath("/admin/reservations");
 
 		if (libraryId) {
 			revalidatePath(`/libraries/${libraryId}`);
